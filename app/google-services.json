@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1048013889719",
+    "firebase_url": "https://sarcar-4475c.firebaseio.com",
+    "project_id": "sarcar-4475c",
+    "storage_bucket": "sarcar-4475c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1048013889719:android:e1f38965f72a1438",
+        "android_client_info": {
+          "package_name": "sodevan.sarcar"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1048013889719-ttjv56gnuj7hnnitcjdphc7ioecvbrrj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "sodevan.sarcar",
+            "certificate_hash": "4B7BC20212A26EA6C7057F564011341060883D6E"
+          }
+        },
+        {
+          "client_id": "1048013889719-r1sjk83lt8a5evegtrvcfalrbvscbv22.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEJADbClfxVZJEK2E6ZNM5irXcfybVAf0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1048013889719-r1sjk83lt8a5evegtrvcfalrbvscbv22.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
