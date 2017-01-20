@@ -35,6 +35,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import sodevan.sarcar.MapModels.GetStreetInfo;
+import sodevan.sarcar.MapModels.MapResponse;
+
 
 public class Map extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
 
@@ -52,7 +58,6 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     private String carId = "car-9990401860" ;
     FirebaseDatabase database ;
     DatabaseReference reference , reference2 ;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +98,19 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
 
                 Log.d(TAG , "Lat : "+location.getLatitude() + "  , Long : "+location.getLongitude()) ;
+                GetStreetInfo getStreetInfo=new GetStreetInfo(String.valueOf(location.getLatitude()),String.valueOf(location.getLongitude()));
+                Call<MapResponse> call=getStreetInfo.getkey();
+                call.enqueue(new Callback<MapResponse>() {
+                    @Override
+                    public void onResponse(Call<MapResponse> call, Response<MapResponse> response) {
+                        Log.d("TAG", response.body().getResults().get(0).getAddressComponents().get(0).getLongName());
+                    }
+
+                    @Override
+                    public void onFailure(Call<MapResponse> call, Throwable t) {
+
+                    }
+                });
                 LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
 
                 reference.setValue(new Car(location.getLatitude()+"" , location.getLongitude()+"" , carId , location.getSpeed()+""));
