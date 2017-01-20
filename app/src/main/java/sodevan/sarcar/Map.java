@@ -75,6 +75,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
+
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -112,6 +113,8 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                 else if (marker!=null){
                     animateMarker(marker , loc , false);
+                    gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 21.0f));
+
 
                 }
 
@@ -133,7 +136,8 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
             }
         } ;
 
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,  locationListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,  locationListener);
+
 
 
     }
