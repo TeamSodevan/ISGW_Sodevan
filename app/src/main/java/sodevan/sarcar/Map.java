@@ -64,6 +64,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     private static int permissionRequest = 120 ;
     private int flag = 0 , flag2 =0 ;
     private String carId = "car-9990401860" ;
+    float cur_dist=0,prev_dist=0;
 
     FirebaseDatabase database ;
     DatabaseReference reference , reference2  , reference3;
@@ -72,9 +73,12 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
      HashMap< String , String >  ambstatus ;
      HashMap< String , String> sad ;
-
-    String privlat   ;
+    Location Myloc,Prev_loc;
+    String privlat;
     String privlong ;
+    double LAT,LONG,prev_lat,prev_long;
+
+
 
 
 
@@ -83,7 +87,8 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         tv_low= (TextView) findViewById(R.id.loc_road);
-
+        Myloc=new Location("");
+        Prev_loc=new Location("");
         ambstatus = new HashMap<>() ;
 
         mContext = this;
@@ -119,12 +124,14 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
             @Override
             public void onLocationChanged(Location location) {
 
+                    prev_lat=LAT;
+                    prev_long=LONG;
+                setpreviouslocation(prev_lat,prev_long);
+                    LAT=location.getLatitude();
+                    LONG=location.getLongitude();
+                    setcurrentlocation(LAT,LONG);
 
-
-
-
-
-                Log.d(TAG , "Lat :"+location.getLatitude() + "  , Long : "+location.getLongitude()) ;
+                //Log.d(TAG , "Lat :"+location.getLatitude() + "  , Long : "+location.getLongitude()) ;
 
 
 
@@ -142,8 +149,6 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                         reference = database.getReference("Cars").child(roadname).child(carId) ;
 
                     }
-
-
 
 
                     @Override
@@ -167,12 +172,6 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                     }
                 });
-
-
-
-
-
-
 
 
 
@@ -217,10 +216,6 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                 privlong = location.getLongitude() +"";
 
 
-
-
-
-
                 }
 
             @Override
@@ -245,6 +240,18 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
     }
 
+    private void setpreviouslocation(double prev_lat, double prev_long) {
+        Prev_loc.setLatitude(prev_lat);
+        Prev_loc.setLongitude(prev_long);
+        Log.d("TAG_Previous",prev_lat+","+prev_long);
+    }
+
+    private void setcurrentlocation(double lat, double aLong) {
+        Myloc.setLatitude(lat);
+        Myloc.setLongitude(aLong);
+        Log.d("TAG_current",lat+","+aLong);
+    }
+
     private void checkcollision() {
         if (roadname!=null)
 
@@ -255,9 +262,23 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (DataSnapshot dsp : dataSnapshot.getChildren()) {
-                        String lattit = String.valueOf(dsp.child("longitude").getValue());
-                        String longit = String.valueOf(dsp.child("latitude").getValue());
-                        Log.d("car", lattit + "," + longit);
+                        Location cur_loc=new Location("");
+                        Location prev_loc=new Location("");
+                        String current_lat = String.valueOf(dsp.child("latitude").getValue());
+                        String current_long = String.valueOf(dsp.child("longitude").getValue());
+                        String prev_lat=String.valueOf(dsp.child("prevlatitude").getValue());
+                        String prev_long=String.valueOf(dsp.child("prevlongitude").getValue());
+                        Log.d("Tags_prev",prev_lat);
+                        Log.d("Tags_cur",prev_long);
+
+                        cur_loc.setLatitude(Double.parseDouble(current_lat));
+                        cur_loc.setLongitude(Double.parseDouble(current_long));
+                        prev_loc.setLatitude(Double.parseDouble(prev_lat));
+                        prev_loc.setLongitude(Double.parseDouble(prev_long));
+                        cur_dist=cur_loc.distanceTo(Myloc);
+                        prev_dist=prev_loc.distanceTo(Prev_loc);
+                        //Toast.makeText(mContext, "Distance"+dist, Toast.LENGTH_SHORT).show();
+                        Log.d("Dist",cur_dist+","+prev_dist);
                     }
                 }
 
