@@ -39,6 +39,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -66,6 +67,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     private String carId = "car-9990401860" ;
     float cur_dist=0,prev_dist=0;
     HashMap<String,Location> NearbyVehichles;
+    HashMap<String , Marker> markersred ;
     FirebaseDatabase database ;
     DatabaseReference reference , reference2  , reference3;
     TextView tv_low;
@@ -90,6 +92,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
         Myloc=new Location("");
         Prev_loc=new Location("");
         ambstatus = new HashMap<>() ;
+        markersred = new HashMap<>() ;
         NearbyVehichles=new HashMap<>();
         mContext = this;
 
@@ -261,6 +264,10 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
             reference2.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+
+                    NearbyVehichles = new HashMap<String, Location>() ;
+
+
                     for (DataSnapshot dsp : dataSnapshot.getChildren()) {
                         Location cur_loc=new Location("");
                         Location prev_loc=new Location("");
@@ -278,13 +285,14 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                         cur_dist=cur_loc.distanceTo(Myloc);
                         prev_dist=prev_loc.distanceTo(Prev_loc);
                         //Toast.makeText(mContext, "Distance"+dist, Toast.LENGTH_SHORT).show();
+
                         if(cur_dist<prev_dist&&cur_dist<=50){
                             NearbyVehichles.put(String.valueOf(dsp.child("carid").getValue()),cur_loc);
 
                         }
                         Log.d("Dist",cur_dist+","+prev_dist);
                     }
-                        MapNearbyVehichles(NearbyVehichles);
+                        MapNearbyVehichles();
                 }
 
 
@@ -297,8 +305,58 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
         }
     }
 
-    private void MapNearbyVehichles(HashMap<String, Location> nearbyVehichles) {
-        //TODO add vehichles on map
+    private void MapNearbyVehichles() {
+
+        HashMap<String , Marker> tempred =   new HashMap<>();
+        Set<String> keys = NearbyVehichles.keySet() ;
+
+        for(String id : keys ){
+
+            Log.d("red" , id) ;
+
+            Location ln = NearbyVehichles.get(id)  ;
+
+            LatLng ns= new LatLng(ln.getLatitude() , ln.getLongitude()) ;
+
+             Marker m    = markersred.get(id) ;
+
+            if (m==null) {
+
+                Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.red);
+                Bitmap im = Bitmap.createScaledBitmap(bm, 80, 179, false);
+                MarkerOptions markerop = new MarkerOptions().position(ns).icon(BitmapDescriptorFactory.fromBitmap(im));
+                Marker m1 = gmap.addMarker(markerop) ;
+                tempred.put(id , m1) ;
+
+
+            }
+
+
+            else  {
+                animateMarker(m ,   ns, false );
+                tempred.put(id,m) ;
+                markersred.remove(id) ;
+            }
+        }
+
+
+        if (markersred!=null) {
+            Set<String> keys2 = markersred.keySet();
+
+            for (String id : keys2) {
+
+                Marker m = markersred.get(id);
+                removemarker(m);
+            }
+
+
+
+        }
+
+        markersred = tempred ;
+
+
+
 
     }
 
@@ -324,7 +382,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                         Log.d("Ambulance" ,ns+"" ) ;
 
-                        MarkerOptions markerop=  new MarkerOptions().position(ns).icon(BitmapDescriptorFactory.fromBitmap(im)) ;
+                        MarkerOptions markerop =  new MarkerOptions().position(ns).icon(BitmapDescriptorFactory.fromBitmap(im)) ;
 
 
 
@@ -407,6 +465,11 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     @Override
     public void onConnectionSuspended(int i) {
 
+    }
+
+
+    public void removemarker ( Marker marker) {
+        marker.remove();
     }
 
 
