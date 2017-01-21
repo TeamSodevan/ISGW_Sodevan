@@ -65,7 +65,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     private int flag = 0 , flag2 =0 ;
     private String carId = "car-9990401860" ;
     float cur_dist=0,prev_dist=0;
-
+    HashMap<String,Location> NearbyVehichles;
     FirebaseDatabase database ;
     DatabaseReference reference , reference2  , reference3;
     TextView tv_low;
@@ -90,7 +90,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
         Myloc=new Location("");
         Prev_loc=new Location("");
         ambstatus = new HashMap<>() ;
-
+        NearbyVehichles=new HashMap<>();
         mContext = this;
 
         database = FirebaseDatabase.getInstance() ;
@@ -279,10 +279,12 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                         prev_dist=prev_loc.distanceTo(Prev_loc);
                         //Toast.makeText(mContext, "Distance"+dist, Toast.LENGTH_SHORT).show();
                         if(cur_dist<prev_dist&&cur_dist<=50){
-                            showonmap(cur_loc);
+                            NearbyVehichles.put(String.valueOf(dsp.child("carid").getValue()),cur_loc);
+
                         }
                         Log.d("Dist",cur_dist+","+prev_dist);
                     }
+                        MapNearbyVehichles(NearbyVehichles);
                 }
 
 
@@ -295,8 +297,9 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
         }
     }
 
-    private void showonmap(Location cur_loc) {
-        //Add this vehichle on map with notification TODO
+    private void MapNearbyVehichles(HashMap<String, Location> nearbyVehichles) {
+        //TODO add vehichles on map
+
     }
 
 
