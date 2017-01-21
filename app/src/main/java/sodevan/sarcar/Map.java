@@ -209,22 +209,28 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     }
 
     private void checkcollision() {
-        reference2=database.getReference("Cars").child(roadname);
-        reference2.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot dsp:dataSnapshot.getChildren()){
-                   String lattit= String.valueOf(dsp.child("longitude").getValue())    ;
-                   String longit=String.valueOf(dsp.child("latitude").getValue());
-                    Log.d("car",lattit+","+longit);
+        if (roadname!=null)
+
+        {
+            reference2 = database.getReference("Cars").child(roadname);
+            reference2.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot dsp : dataSnapshot.getChildren()) {
+                        String lattit = String.valueOf(dsp.child("longitude").getValue());
+                        String longit = String.valueOf(dsp.child("latitude").getValue());
+                        Log.d("car", lattit + "," + longit);
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
 
-            }
-        });
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+        }
     }
 
 
