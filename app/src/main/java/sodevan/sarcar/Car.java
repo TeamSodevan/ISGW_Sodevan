@@ -1,8 +1,6 @@
 package sodevan.sarcar;
 
-/**
- * Created by ravipiyush on 14/01/17.
- */
+
 
 public class Car {
 

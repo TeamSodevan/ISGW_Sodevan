@@ -111,7 +111,8 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
 
 
-                Log.d(TAG , "Lat : "+location.getLatitude() + "  , Long : "+location.getLongitude()) ;
+                Log.d(TAG , "Lat :"+location.getLatitude() + "  , Long : "+location.getLongitude()) ;
+
                 GetStreetInfo getStreetInfo=new GetStreetInfo(String.valueOf(location.getLatitude()),String.valueOf(location.getLongitude()));
                 Call<MapResponse> call=getStreetInfo.getkey();
                 call.enqueue(new Callback<MapResponse>() {
@@ -130,12 +131,21 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                     }
                 });
+
+
+
+
+
+
+
+
+
                 LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
 
                 if (reference!=null) {
 
                     if (flag2==0) {
-                        reference.setValue(new Car(location.getLatitude() + "", location.getLongitude() + "", carId, location.getSpeed() + "" , location.getLatitude() +"", location.getLongitude()+"" ));
+                        reference.setValue(new Car(location.getLatitude() + "", location.getLongitude() + "", carId, location.getSpeed() + "" , location.getLatitude() +"", location.getLongitude()+""));
                         flag2++;
 
                     }
