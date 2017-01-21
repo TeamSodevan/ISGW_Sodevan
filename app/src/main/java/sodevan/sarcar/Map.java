@@ -171,7 +171,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot dsp:dataSnapshot.getChildren()){
                     String lattit=dsp.child(dsp.getKey()).child("carid").toString();
-                    Log.d("car second",lattit);
+                    Log.d("car secondd",lattit);
                 }
             }
 
