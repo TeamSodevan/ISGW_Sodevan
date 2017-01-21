@@ -38,6 +38,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -51,6 +53,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
     private GoogleMap gmap;
     private GoogleApiClient googleApiClient;
+    Marker ambulance  ;
     private static int request = 9000;
     private static String TAG = "Map Activity";
     Context mContext;
@@ -63,18 +66,26 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     private String carId = "car-9990401860" ;
 
     FirebaseDatabase database ;
-    DatabaseReference reference , reference2 ;
+    DatabaseReference reference , reference2  , reference3;
     TextView tv_low;
-    String roadname ;
+    String roadname = "MangalPandayRoad" ;
+
+     HashMap< String , String >  ambstatus ;
+     HashMap< String , String> sad ;
 
     String privlat   ;
     String privlong ;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         tv_low= (TextView) findViewById(R.id.loc_road);
+
+        ambstatus = new HashMap<>() ;
+
         mContext = this;
 
         database = FirebaseDatabase.getInstance() ;
@@ -115,6 +126,10 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                 Log.d(TAG , "Lat :"+location.getLatitude() + "  , Long : "+location.getLongitude()) ;
 
+
+
+
+
                 GetStreetInfo getStreetInfo=new GetStreetInfo(String.valueOf(location.getLatitude()),String.valueOf(location.getLongitude()));
                 Call<MapResponse> call=getStreetInfo.getkey();
                 call.enqueue(new Callback<MapResponse>() {
@@ -122,11 +137,14 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                     public void onResponse(Call<MapResponse> call, Response<MapResponse> response) {
                         Log.d("TAG", response.body().getResults().get(0).getAddressComponents().get(0).getLongName());
                         tv_low.setText(response.body().getResults().get(0).getAddressComponents().get(0).getLongName());
-                        roadname = response.body().getResults().get(0).getAddressComponents().get(0).getLongName() ;
+                     //   roadname = response.body().getResults().get(0).getAddressComponents().get(0).getLongName() ;
 
                         reference = database.getReference("Cars").child(roadname).child(carId) ;
 
                     }
+
+
+
 
                     @Override
                     public void onFailure(Call<MapResponse> call, Throwable t) {
@@ -174,6 +192,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                 }
                 checkcollision();
+                checkambulance();
 
                 Bitmap bm = BitmapFactory.decodeResource(getResources() , R.drawable.car) ;
                 Bitmap im = Bitmap.createScaledBitmap(bm , 80 , 179 , false) ;
@@ -231,6 +250,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
         {
             reference2 = database.getReference("Cars").child(roadname);
+
             reference2.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -248,6 +268,65 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                 }
             });
 
+        }
+    }
+
+
+    private void checkambulance() {
+
+        if (roadname!=null){
+
+            reference3  = database.getReference("Ambulances").child(roadname) ;
+
+            reference3.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                    for (DataSnapshot ipo : dataSnapshot.getChildren()){
+
+                        Ambulances am = ipo.getValue(Ambulances.class) ;
+
+                        Bitmap bm = BitmapFactory.decodeResource(getResources() , R.drawable.ambulance) ;
+                        Bitmap im = Bitmap.createScaledBitmap(bm , 80 , 179 , false) ;
+
+                        LatLng ns = new LatLng(am.getLat() , am.getLongi() )  ;
+
+                        Log.d("Ambulance" ,ns+"" ) ;
+
+                        MarkerOptions markerop=  new MarkerOptions().position(ns).icon(BitmapDescriptorFactory.fromBitmap(im)) ;
+
+
+
+
+
+
+                        String m =  ambstatus.get(am.getAmbid())   ;
+
+                        if (m==null){
+
+                            Log.d("Ambulance"  , " Thats New") ;
+                            ambulance = gmap.addMarker(markerop) ;
+                             ambstatus.put(am.getAmbid() , "added" ) ;
+
+                        }
+
+                        else {
+
+                            Log.d("Ambulance"  , " moving Marker") ;
+
+                            animateMarker(ambulance , ns , false);
+
+                        }
+
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            }) ;
         }
     }
 
