@@ -57,12 +57,16 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     LocationManager locationManager;
     Marker marker;
     private static int permissionRequest = 120 ;
-    private int flag = 0 ;
+    private int flag = 0 , flag2 =0 ;
     private String carId = "car-9990401860" ;
+
     FirebaseDatabase database ;
     DatabaseReference reference , reference2 ;
     TextView tv_low;
     String roadname ;
+
+    String privlat   ;
+    String privlong ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,9 +102,14 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
             return;
         }
 
-        LocationListener locationListener = new LocationListener() {
+        final LocationListener locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
+
+
+
+
+
 
                 Log.d(TAG , "Lat : "+location.getLatitude() + "  , Long : "+location.getLongitude()) ;
                 GetStreetInfo getStreetInfo=new GetStreetInfo(String.valueOf(location.getLatitude()),String.valueOf(location.getLongitude()));
@@ -123,9 +132,19 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                 });
                 LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
 
-                if (reference!=null)
-                reference.setValue(new Car(location.getLatitude()+"" , location.getLongitude()+"" , carId , location.getSpeed()+""));
+                if (reference!=null) {
 
+                    if (flag2==0) {
+                        reference.setValue(new Car(location.getLatitude() + "", location.getLongitude() + "", carId, location.getSpeed() + "" , location.getLatitude() +"", location.getLongitude()+"" ));
+                        flag2++;
+
+                    }
+
+                    else {
+                        reference.setValue(new Car(location.getLatitude() + "", location.getLongitude() + "", carId, location.getSpeed() + "" ,privlat, privlong )) ;
+                    }
+
+                }
                 checkcollision();
 
                 Bitmap bm = BitmapFactory.decodeResource(getResources() , R.drawable.car) ;
@@ -146,6 +165,14 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
 
                 }
+
+                privlat = location.getLatitude() +"" ;
+                privlong = location.getLongitude() +"";
+
+
+
+
+
 
                 }
 
