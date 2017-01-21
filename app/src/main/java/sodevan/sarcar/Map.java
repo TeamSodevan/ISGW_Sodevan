@@ -54,7 +54,7 @@ import sodevan.sarcar.PlacesModels.PlacesResponse;
 
 
 public class Map extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
-    TextToSpeech tts;
+    TextToSpeech tts,tts1;
     private GoogleMap gmap;
     private GoogleApiClient googleApiClient;
     Marker ambulance  ;
@@ -402,6 +402,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
     private void checkambulance() {
 
+
         if (roadname!=null){
 
             reference3  = database.getReference("Ambulances").child(roadname) ;
@@ -422,12 +423,17 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                         Log.d("Ambulance" ,ns+"" ) ;
 
                         MarkerOptions markerop =  new MarkerOptions().position(ns).icon(BitmapDescriptorFactory.fromBitmap(im)) ;
-
-
-
-
-
-
+                         tts1=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int i) {
+                if(i !=TextToSpeech.ERROR){
+                    tts1.setLanguage(Locale.US);
+                }
+            }
+        });
+                        String toSpeak="Ambulance is on the same route kindly move your vehicle to the left lane.";
+                        Toast.makeText(getApplicationContext(),toSpeak,Toast.LENGTH_LONG).show();
+                        tts1.speak(toSpeak,TextToSpeech.QUEUE_FLUSH,null);
                         String m =  ambstatus.get(am.getAmbid())   ;
 
                         if (m==null){
