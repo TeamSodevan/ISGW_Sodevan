@@ -165,13 +165,14 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     }
 
     private void checkcollision() {
-        reference2=database.getReference().child("Cars");
+        reference2=database.getReference("Cars");
         reference2.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot dsp:dataSnapshot.getChildren()){
-                    String lattit=dsp.child(dsp.getKey()).child("carid").toString();
-                    Log.d("car secondd",lattit);
+                   String lattit= String.valueOf(dsp.child("longitude").getValue());
+                   String longit=String.valueOf(dsp.child("latitude").getValue());
+                    Log.d("car",lattit+","+longit);
                 }
             }
 
