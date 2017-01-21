@@ -227,7 +227,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     }
 
     private void checkcollision() {
-        reference2=database.getReference("Cars");
+        reference2=database.getReference("Cars").child(roadname);
         reference2.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
