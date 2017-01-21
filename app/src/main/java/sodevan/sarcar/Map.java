@@ -62,6 +62,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     FirebaseDatabase database ;
     DatabaseReference reference , reference2 ;
     TextView tv_low;
+    String roadname ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +73,8 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
         database = FirebaseDatabase.getInstance() ;
 
-        reference = database.getReference("Cars").child(carId) ;
+
+
 
 
 
@@ -108,6 +110,10 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                     public void onResponse(Call<MapResponse> call, Response<MapResponse> response) {
                         Log.d("TAG", response.body().getResults().get(0).getAddressComponents().get(0).getLongName());
                         tv_low.setText(response.body().getResults().get(0).getAddressComponents().get(0).getLongName());
+                        roadname = response.body().getResults().get(0).getAddressComponents().get(0).getLongName() ;
+
+                        reference = database.getReference("Cars").child(roadname).child(carId) ;
+
                     }
 
                     @Override
@@ -117,6 +123,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                 });
                 LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
 
+                if (reference!=null)
                 reference.setValue(new Car(location.getLatitude()+"" , location.getLongitude()+"" , carId , location.getSpeed()+""));
 
                 checkcollision();
@@ -170,7 +177,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot dsp:dataSnapshot.getChildren()){
-                   String lattit= String.valueOf(dsp.child("longitude").getValue());
+                   String lattit= String.valueOf(dsp.child("longitude").getValue())    ;
                    String longit=String.valueOf(dsp.child("latitude").getValue());
                     Log.d("car",lattit+","+longit);
                 }
