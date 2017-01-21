@@ -287,6 +287,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                         //Toast.makeText(mContext, "Distance"+dist, Toast.LENGTH_SHORT).show();
 
                         if(cur_dist<prev_dist&&cur_dist<=50){
+
                             NearbyVehichles.put(String.valueOf(dsp.child("carid").getValue()),cur_loc);
 
                         }
