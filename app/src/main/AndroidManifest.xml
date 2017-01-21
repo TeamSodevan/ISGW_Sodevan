@@ -19,14 +19,14 @@
             android:value="AIzaSyBnKmQp2PY4LdFYcKAa9_NEyA2M95h942c" />
 
         <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity android:name=".Map" />
-        <activity android:name=".LoginActivity"></activity>
+        <activity android:name=".LoginActivity"> <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter></activity>
     </application>
 
 </manifest>

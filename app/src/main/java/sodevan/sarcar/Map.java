@@ -2,6 +2,7 @@ package sodevan.sarcar;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -40,7 +41,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -51,6 +54,7 @@ import sodevan.sarcar.MapModels.GetStreetInfo;
 import sodevan.sarcar.MapModels.MapResponse;
 import sodevan.sarcar.PlacesModels.Places;
 import sodevan.sarcar.PlacesModels.PlacesResponse;
+import sodevan.sarcar.PlacesModels.Result;
 
 
 public class Map extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
@@ -66,15 +70,15 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     LocationManager locationManager;
     Marker marker;
     private static int permissionRequest = 120 ;
-    private int flag = 0 , flag2 =0 ;
-    private String carId = "car-9990401860" ;
+    private int flag = 0 , flag2 =0 ,flag3=0;
+    private String carId  ;
     float cur_dist=0,prev_dist=0;
     HashMap<String,Location> NearbyVehichles;
     HashMap<String , Marker> markersred ;
     FirebaseDatabase database ;
     DatabaseReference reference , reference2  , reference3;
     TextView tv_low;
-    String roadname = "MangalPandayRoad" ;
+    String roadname=null,previousroad=null;
 
      HashMap< String , String >  ambstatus ;
      HashMap< String , String> sad ;
@@ -82,6 +86,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     String privlat;
     String privlong ;
     double LAT,LONG,prev_lat,prev_long;
+    String phone_num;
 
 
 
@@ -98,7 +103,10 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
         markersred = new HashMap<>() ;
         NearbyVehichles=new HashMap<>();
         mContext = this;
-
+        SharedPreferences pref=getSharedPreferences("Preferences", Context.MODE_PRIVATE);
+        phone_num=pref.getString("phone",null);
+        Log.d("Phone number",phone_num);
+        carId="car-"+phone_num;
         database = FirebaseDatabase.getInstance() ;
 
 
@@ -130,27 +138,24 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
             @Override
             public void onLocationChanged(Location location) {
 
-                    prev_lat=LAT;
-                    prev_long=LONG;
-                setpreviouslocation(prev_lat,prev_long);
-                    LAT=location.getLatitude();
-                    LONG=location.getLongitude();
-                    setcurrentlocation(LAT,LONG);
+                prev_lat = LAT;
+                prev_long = LONG;
+                setpreviouslocation(prev_lat, prev_long);
+                LAT = location.getLatitude();
+                LONG = location.getLongitude();
+                setcurrentlocation(LAT, LONG);
 
                 //Log.d(TAG , "Lat :"+location.getLatitude() + "  , Long : "+location.getLongitude()) ;
 
 
-
-
-
-                GetStreetInfo getStreetInfo=new GetStreetInfo(String.valueOf(location.getLatitude()),String.valueOf(location.getLongitude()));
-                Call<MapResponse> call=getStreetInfo.getkey();
-                call.enqueue(new Callback<MapResponse>() {
+                GetStreetInfo getStreetInfo = new GetStreetInfo(String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()));
+                final Call<MapResponse> call = getStreetInfo.getkey();
+               /* call.enqueue(new Callback<MapResponse>() {
                     @Override
                     public void onResponse(Call<MapResponse> call, Response<MapResponse> response) {
                         Log.d("TAG", response.body().getResults().get(0).getAddressComponents().get(0).getLongName());
                         tv_low.setText(response.body().getResults().get(0).getAddressComponents().get(0).getLongName());
-                     //   roadname = response.body().getResults().get(0).getAddressComponents().get(0).getLongName() ;
+                       roadname = response.body().getResults().get(0).getAddressComponents().get(0).getLongName() ;                flag3++;
 
                         reference = database.getReference("Cars").child(roadname).child(carId) ;
 
@@ -161,11 +166,41 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                     public void onFailure(Call<MapResponse> call, Throwable t) {
 
                     }
-                });
+                });*/
+                Thread thread = new Thread(new Runnable() {
 
-                Places places=new Places(String.valueOf(location.getLatitude()),String.valueOf(location.getLongitude()));
-                Call<PlacesResponse> call1=places.getKey();
-                call1.enqueue(new Callback<PlacesResponse>() {
+                    @Override
+                    public void run() {
+
+
+                        //Your code goes heretry {
+                        try {
+                            roadname = call.execute().body().getResults().get(0).getAddressComponents().get(0).getLongName();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                });
+                if(roadname!=null){
+                    DatabaseReference ref=database.getReference("Cars").child(roadname).child(carId);
+                    if(reference!=null) {
+                        ref.setValue(null);
+                        Log.d("removedade", ref.toString());
+                    }
+                }
+                thread.start();
+
+                tv_low.setText(roadname);
+                Log.d("roadname", roadname + "");
+                if (roadname != null) {
+                    reference = database.getReference("Cars").child(roadname).child(carId);
+                    Log.d("firebase", reference.getKey());
+
+
+                    Places places = new Places(String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()));
+                    final Call<PlacesResponse> call1 = places.getKey();
+               /* call1.enqueue(new Callback<PlacesResponse>() {
                     @Override
                     public void onResponse(Call<PlacesResponse> call, Response<PlacesResponse> response) {
                        for(int i=0;i<=1;i++) {
@@ -187,51 +222,72 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                     }
                 });
+                */
+                    Thread thread2 = new Thread(new Runnable() {
+                        List<Result> lista = null;
+
+                        @Override
+                        public void run() {
+                            try {
+                                //Your code goes here
+
+                                try {
+                                    lista = call1.execute().body().getResults();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                for (int i = 0; i <= 1; i++) {
+                                    Double lat = lista.get(i).getGeometry().getLocation().getLat();
+                                    Double Long = lista.get(i).getGeometry().getLocation().getLng();
+                                    putpetrolpump(new LatLng(lat, Long));
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    thread2.start();
+                    LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+                    Log.d("TAG_RECHD", "there");
+                    if (reference != null) {
+                        if (flag2 == 0) {
+                            Log.d("TAG_RECHD", "here");
+
+                            reference.setValue(new Car(location.getLatitude() + "", location.getLongitude() + "", carId, location.getSpeed() + "", location.getLatitude() + "", location.getLongitude() + ""));
+                            flag2++;
+
+                        } else {
+                            reference.setValue(new Car(location.getLatitude() + "", location.getLongitude() + "", carId, location.getSpeed() + "", privlat, privlong));
+                        }
+
+                    }
+                    checkcollision();
+                    checkambulance();
+
+                    Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.car);
+                    Bitmap im = Bitmap.createScaledBitmap(bm, 80, 179, false);
+                    MarkerOptions markerop = new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.fromBitmap(im));
 
 
+                    if (flag == 0 && gmap != null) {
+                        marker = gmap.addMarker(markerop);
+                        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 21.0f));
 
-                LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+                        flag = 1;
+                    } else if (marker != null) {
+                        animateMarker(marker, loc, false);
+                        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 21.0f));
 
-                if (reference!=null) {
-
-                    if (flag2==0) {
-                        reference.setValue(new Car(location.getLatitude() + "", location.getLongitude() + "", carId, location.getSpeed() + "" , location.getLatitude() +"", location.getLongitude()+""));
-                        flag2++;
 
                     }
 
-                    else {
-                        reference.setValue(new Car(location.getLatitude() + "", location.getLongitude() + "", carId, location.getSpeed() + "" ,privlat, privlong )) ;
-                    }
-
-                }
-                checkcollision();
-                checkambulance();
-
-                Bitmap bm = BitmapFactory.decodeResource(getResources() , R.drawable.car) ;
-                Bitmap im = Bitmap.createScaledBitmap(bm , 80 , 179 , false) ;
-                MarkerOptions markerop=  new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.fromBitmap(im)) ;
-
-
-                if (flag==0 && gmap!=null) {
-                   marker = gmap.addMarker(markerop) ;
-                    gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 21.0f));
-
-                    flag=1 ;
-                    }
-
-                else if (marker!=null){
-                    animateMarker(marker , loc , false);
-                    gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 21.0f));
+                    privlat = location.getLatitude() + "";
+                    privlong = location.getLongitude() + "";
 
 
                 }
-
-                privlat = location.getLatitude() +"" ;
-                privlong = location.getLongitude() +"";
-
-
-                }
+            }
 
             @Override
             public void onStatusChanged(String s, int i, Bundle bundle) {
@@ -291,36 +347,41 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    NearbyVehichles = new HashMap<String, Location>() ;
+                    NearbyVehichles = new HashMap<String, Location>();
 
 
                     for (DataSnapshot dsp : dataSnapshot.getChildren()) {
-                        Location cur_loc=new Location("");
-                        Location prev_loc=new Location("");
-                        String current_lat = String.valueOf(dsp.child("latitude").getValue());
-                        String current_long = String.valueOf(dsp.child("longitude").getValue());
-                        String prev_lat=String.valueOf(dsp.child("prevlatitude").getValue());
-                        String prev_long=String.valueOf(dsp.child("prevlongitude").getValue());
-                        Log.d("Tags_prev",prev_lat);
-                        Log.d("Tags_cur",prev_long);
+                        if (carId != String.valueOf(dsp.child("carid").getValue())) {
+                            Location cur_loc = new Location("");
+                            Location prev_loc = new Location("");
+                            String current_lat = String.valueOf(dsp.child("latitude").getValue());
+                            String current_long = String.valueOf(dsp.child("longitude").getValue());
+                            String prev_lat = String.valueOf(dsp.child("prevlatitude").getValue());
+                            String prev_long = String.valueOf(dsp.child("prevlongitude").getValue());
+                            Log.d("Tags_prev", prev_lat);
+                            Log.d("Tags_cur", prev_long);
 
-                        cur_loc.setLatitude(Double.parseDouble(current_lat));
-                        cur_loc.setLongitude(Double.parseDouble(current_long));
-                        prev_loc.setLatitude(Double.parseDouble(prev_lat));
-                        prev_loc.setLongitude(Double.parseDouble(prev_long));
-                        cur_dist=cur_loc.distanceTo(Myloc);
-                        prev_dist=prev_loc.distanceTo(Prev_loc);
-                        //Toast.makeText(mContext, "Distance"+dist, Toast.LENGTH_SHORT).show();
+                            cur_loc.setLatitude(Double.parseDouble(current_lat));
+                            cur_loc.setLongitude(Double.parseDouble(current_long));
+                            prev_loc.setLatitude(Double.parseDouble(prev_lat));
+                            prev_loc.setLongitude(Double.parseDouble(prev_long));
+                            cur_dist = cur_loc.distanceTo(Myloc);
+                            prev_dist = prev_loc.distanceTo(Prev_loc);
+                            //Toast.makeText(mContext, "Distance"+dist, Toast.LENGTH_SHORT).show();
 
-                        if(cur_dist<prev_dist&&cur_dist<=50){
+                            if (cur_dist < prev_dist && cur_dist <= 50) {
 
-                            NearbyVehichles.put(String.valueOf(dsp.child("carid").getValue()),cur_loc);
+                                NearbyVehichles.put(String.valueOf(dsp.child("carid").getValue()), cur_loc);
 
-                        }
-                        Log.d("Dist",cur_dist+","+prev_dist);
-                    }
+                            }
+                            Log.d("Dist", cur_dist + "," + prev_dist);
+
                         MapNearbyVehichles();
+                        }
+                    }
+
                 }
+
 
 
                 @Override
