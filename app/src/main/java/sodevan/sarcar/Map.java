@@ -43,6 +43,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import sodevan.sarcar.MapModels.GetStreetInfo;
 import sodevan.sarcar.MapModels.MapResponse;
+import sodevan.sarcar.PlacesModels.Places;
+import sodevan.sarcar.PlacesModels.PlacesResponse;
 
 
 public class Map extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
@@ -128,6 +130,22 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                     @Override
                     public void onFailure(Call<MapResponse> call, Throwable t) {
+
+                    }
+                });
+
+                Places places=new Places(String.valueOf(location.getLatitude()),String.valueOf(location.getLongitude()));
+                Call<PlacesResponse> call1=places.getKey();
+                call1.enqueue(new Callback<PlacesResponse>() {
+                    @Override
+                    public void onResponse(Call<PlacesResponse> call, Response<PlacesResponse> response) {
+                       for(int i=0;i<=0;i++) {
+                           Log.d("Tag_Places", response.body().getResults().get(i).getName());
+                       }
+                    }
+
+                    @Override
+                    public void onFailure(Call<PlacesResponse> call, Throwable t) {
 
                     }
                 });
