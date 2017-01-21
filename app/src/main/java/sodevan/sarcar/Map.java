@@ -32,8 +32,11 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -58,12 +61,13 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     private String carId = "car-9990401860" ;
     FirebaseDatabase database ;
     DatabaseReference reference , reference2 ;
+    TextView tv_low;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-
+        tv_low= (TextView) findViewById(R.id.loc_road);
         mContext = this;
 
         database = FirebaseDatabase.getInstance() ;
@@ -96,7 +100,6 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
             @Override
             public void onLocationChanged(Location location) {
 
-
                 Log.d(TAG , "Lat : "+location.getLatitude() + "  , Long : "+location.getLongitude()) ;
                 GetStreetInfo getStreetInfo=new GetStreetInfo(String.valueOf(location.getLatitude()),String.valueOf(location.getLongitude()));
                 Call<MapResponse> call=getStreetInfo.getkey();
@@ -104,6 +107,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                     @Override
                     public void onResponse(Call<MapResponse> call, Response<MapResponse> response) {
                         Log.d("TAG", response.body().getResults().get(0).getAddressComponents().get(0).getLongName());
+                        tv_low.setText(response.body().getResults().get(0).getAddressComponents().get(0).getLongName());
                     }
 
                     @Override
@@ -115,7 +119,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                 reference.setValue(new Car(location.getLatitude()+"" , location.getLongitude()+"" , carId , location.getSpeed()+""));
 
-
+                checkcollision();
 
                 Bitmap bm = BitmapFactory.decodeResource(getResources() , R.drawable.car) ;
                 Bitmap im = Bitmap.createScaledBitmap(bm , 80 , 179 , false) ;
@@ -158,6 +162,24 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
 
 
+    }
+
+    private void checkcollision() {
+        reference2=database.getReference().child("Cars");
+        reference2.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot dsp:dataSnapshot.getChildren()){
+                    String lattit=dsp.child(dsp.getKey()).child("carid").toString();
+                    Log.d("car second",lattit);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 
