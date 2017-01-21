@@ -165,8 +165,17 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                 call1.enqueue(new Callback<PlacesResponse>() {
                     @Override
                     public void onResponse(Call<PlacesResponse> call, Response<PlacesResponse> response) {
-                       for(int i=0;i<=0;i++) {
+                       for(int i=0;i<=1;i++) {
                            Log.d("Tag_Places", response.body().getResults().get(i).getName());
+                          Log.d("Tag_LAT",response.body().getResults().get(i).getGeometry().getLocation().getLat().toString());
+                           Log.d("Tag_LONG",response.body().getResults().get(i).getGeometry().getLocation().getLng().toString());
+
+                        Double lat = response.body().getResults().get(i).getGeometry().getLocation().getLat() ;
+                           Double Long = response.body().getResults().get(i).getGeometry().getLocation().getLng() ;
+
+                           putpetrolpump(new LatLng(lat , Long));
+
+
                        }
                     }
 
@@ -238,6 +247,20 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
         } ;
 
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,  locationListener);
+
+
+
+    }
+
+
+
+    private  void  putpetrolpump(LatLng loca) {
+
+        Bitmap bm = BitmapFactory.decodeResource(getResources() , R.drawable.gs) ;
+        Bitmap im = Bitmap.createScaledBitmap(bm , 100 , 100 , false) ;
+
+        MarkerOptions markerop = new MarkerOptions().position(loca).icon(BitmapDescriptorFactory.fromBitmap(im)) ;
+        Marker marker = gmap.addMarker(markerop) ;
 
 
 

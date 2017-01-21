@@ -33,7 +33,7 @@ public class Places {
                 .build();
 
         PlacesAPIInterface api= retrofit.create(PlacesAPIInterface.class);
-        Call<PlacesResponse> call=api.nearbypetrolpumps(lat+","+longit,"5000",type,API_KEY);
+        Call<PlacesResponse> call=api.nearbypetrolpumps(lat+","+longit,"1000",type,API_KEY);
         return call;
 
     }
