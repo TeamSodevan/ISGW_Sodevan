@@ -278,6 +278,9 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                         cur_dist=cur_loc.distanceTo(Myloc);
                         prev_dist=prev_loc.distanceTo(Prev_loc);
                         //Toast.makeText(mContext, "Distance"+dist, Toast.LENGTH_SHORT).show();
+                        if(cur_dist<prev_dist&&cur_dist<=50){
+                            showonmap(cur_loc);
+                        }
                         Log.d("Dist",cur_dist+","+prev_dist);
                     }
                 }
@@ -290,6 +293,10 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
             });
 
         }
+    }
+
+    private void showonmap(Location cur_loc) {
+        //Add this vehichle on map with notification TODO
     }
 
 
