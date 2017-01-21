@@ -12,6 +12,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -19,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -39,6 +41,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Set;
 
 import retrofit2.Call;
@@ -51,7 +54,7 @@ import sodevan.sarcar.PlacesModels.PlacesResponse;
 
 
 public class Map extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
-
+    TextToSpeech tts;
     private GoogleMap gmap;
     private GoogleApiClient googleApiClient;
     Marker ambulance  ;
@@ -170,10 +173,10 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                           Log.d("Tag_LAT",response.body().getResults().get(i).getGeometry().getLocation().getLat().toString());
                            Log.d("Tag_LONG",response.body().getResults().get(i).getGeometry().getLocation().getLng().toString());
 
-                        Double lat = response.body().getResults().get(i).getGeometry().getLocation().getLat() ;
+                           Double lat = response.body().getResults().get(i).getGeometry().getLocation().getLat() ;
                            Double Long = response.body().getResults().get(i).getGeometry().getLocation().getLng() ;
-
                            putpetrolpump(new LatLng(lat , Long));
+
 
 
                        }
@@ -330,6 +333,18 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     }
 
     private void MapNearbyVehichles() {
+
+        String toSpeak="There is a vehicle nearby";
+        tts=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int i) {
+                if(i !=TextToSpeech.ERROR){
+                    tts.setLanguage(Locale.US);
+                }
+            }
+        });
+        Toast.makeText(getApplicationContext(),toSpeak,Toast.LENGTH_LONG).show();
+        tts.speak(toSpeak,TextToSpeech.QUEUE_FLUSH,null);
 
         HashMap<String , Marker> tempred =   new HashMap<>();
         Set<String> keys = NearbyVehichles.keySet() ;
