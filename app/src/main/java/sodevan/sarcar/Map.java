@@ -315,7 +315,9 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,  locationListener);
 
-
+        locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                0, 0, locationListener);
 
     }
 
