@@ -13,7 +13,6 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -21,7 +20,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -44,7 +42,6 @@ import com.google.firebase.database.ValueEventListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import retrofit2.Call;
@@ -52,13 +49,13 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import sodevan.sarcar.MapModels.GetStreetInfo;
 import sodevan.sarcar.MapModels.MapResponse;
+import sodevan.sarcar.MapModels.Result;
 import sodevan.sarcar.PlacesModels.Places;
 import sodevan.sarcar.PlacesModels.PlacesResponse;
-import sodevan.sarcar.PlacesModels.Result;
 
 
 public class Map extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
-    TextToSpeech tts,tts1;
+
     private GoogleMap gmap;
     private GoogleApiClient googleApiClient;
     Marker ambulance  ;
@@ -70,25 +67,25 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     LocationManager locationManager;
     Marker marker;
     private static int permissionRequest = 120 ;
-    private int flag = 0 , flag2 =0 ,flag3=0;
-    private String carId  ;
+    private int flag = 0 , flag2 =0 ;
+    private String carId = "car-9990401860" ;
     float cur_dist=0,prev_dist=0;
     HashMap<String,Location> NearbyVehichles;
     HashMap<String , Marker> markersred ;
     FirebaseDatabase database ;
     DatabaseReference reference , reference2  , reference3;
     TextView tv_low;
-    String roadname=null,previousroad=null;
+    String roadname = "MangalPandayRoad" ;
 
-     HashMap< String , String >  ambstatus ;
-     HashMap< String , String> sad ;
+    HashMap< String , String >  ambstatus ;
+    HashMap< String , String> sad ;
     Location Myloc,Prev_loc;
     String privlat;
     String privlong ;
     double LAT,LONG,prev_lat,prev_long;
-    String phone_num;
+    String prevroad ;
 
-
+    SharedPreferences pref;
 
 
 
@@ -103,16 +100,12 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
         markersred = new HashMap<>() ;
         NearbyVehichles=new HashMap<>();
         mContext = this;
-        SharedPreferences pref=getSharedPreferences("Preferences", Context.MODE_PRIVATE);
-        phone_num=pref.getString("phone",null);
-        Log.d("Phone number",phone_num);
-        carId="car-"+phone_num;
+
         database = FirebaseDatabase.getInstance() ;
 
 
-
-
-
+        pref=getSharedPreferences("Preferences",Context.MODE_PRIVATE);
+        carId="car-"+pref.getString("phone",null);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -138,18 +131,21 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
             @Override
             public void onLocationChanged(Location location) {
 
-                prev_lat = LAT;
-                prev_long = LONG;
-                setpreviouslocation(prev_lat, prev_long);
-                LAT = location.getLatitude();
-                LONG = location.getLongitude();
-                setcurrentlocation(LAT, LONG);
+                prev_lat=LAT;
+                prev_long=LONG;
+                setpreviouslocation(prev_lat,prev_long);
+                LAT=location.getLatitude();
+                LONG=location.getLongitude();
+                setcurrentlocation(LAT,LONG);
 
                 //Log.d(TAG , "Lat :"+location.getLatitude() + "  , Long : "+location.getLongitude()) ;
 
 
-                GetStreetInfo getStreetInfo = new GetStreetInfo(String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()));
-                final Call<MapResponse> call = getStreetInfo.getkey();
+
+
+
+                GetStreetInfo getStreetInfo=new GetStreetInfo(String.valueOf(location.getLatitude()),String.valueOf(location.getLongitude()));
+                final Call<MapResponse> call=getStreetInfo.getkey();
                /* call.enqueue(new Callback<MapResponse>() {
                     @Override
                     public void onResponse(Call<MapResponse> call, Response<MapResponse> response) {
@@ -173,8 +169,11 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                     public void run() {
 
 
+
+                        prevroad = roadname;
                         //Your code goes heretry {
                         try {
+
                             roadname = call.execute().body().getResults().get(0).getAddressComponents().get(0).getLongName();
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -182,25 +181,23 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                     }
 
                 });
-                if(roadname!=null){
-                    DatabaseReference ref=database.getReference("Cars").child(roadname).child(carId);
-                    if(reference!=null) {
-                        ref.setValue(null);
-                        Log.d("removedade", ref.toString());
-                    }
-                }
+
                 thread.start();
+                if (prevroad!=roadname){
+                    DatabaseReference ref=database.getReference("Cars").child(prevroad).child(carId);
+                    ref.removeValue();
+                }
 
                 tv_low.setText(roadname);
                 Log.d("roadname", roadname + "");
                 if (roadname != null) {
                     reference = database.getReference("Cars").child(roadname).child(carId);
                     Log.d("firebase", reference.getKey());
+                }
 
-
-                    Places places = new Places(String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()));
-                    final Call<PlacesResponse> call1 = places.getKey();
-               /* call1.enqueue(new Callback<PlacesResponse>() {
+                Places places=new Places(String.valueOf(location.getLatitude()),String.valueOf(location.getLongitude()));
+                final Call<PlacesResponse> call1=places.getKey();
+                /* call1.enqueue(new Callback<PlacesResponse>() {
                     @Override
                     public void onResponse(Call<PlacesResponse> call, Response<PlacesResponse> response) {
                        for(int i=0;i<=1;i++) {
@@ -223,70 +220,78 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                     }
                 });
                 */
-                    Thread thread2 = new Thread(new Runnable() {
-                        List<Result> lista = null;
+                Thread thread2 = new Thread(new Runnable() {
+                    List<sodevan.sarcar.PlacesModels.Result> lista = null;
 
-                        @Override
-                        public void run() {
+                    @Override
+                    public void run() {
+                        try {
+                            //Your code goes here
+
                             try {
-                                //Your code goes here
-
-                                try {
-                                    lista = call1.execute().body().getResults();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                for (int i = 0; i <= 1; i++) {
+                                lista = call1.execute().body().getResults();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            for (int i = 0; i <= 1; i++) {
+                                if (lista.size()!=0) {
                                     Double lat = lista.get(i).getGeometry().getLocation().getLat();
                                     Double Long = lista.get(i).getGeometry().getLocation().getLng();
                                     putpetrolpump(new LatLng(lat, Long));
                                 }
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
                             }
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                    });
-                    thread2.start();
-                    LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
-                    Log.d("TAG_RECHD", "there");
-                    if (reference != null) {
-                        if (flag2 == 0) {
-                            Log.d("TAG_RECHD", "here");
-
-                            reference.setValue(new Car(location.getLatitude() + "", location.getLongitude() + "", carId, location.getSpeed() + "", location.getLatitude() + "", location.getLongitude() + ""));
-                            flag2++;
-
-                        } else {
-                            reference.setValue(new Car(location.getLatitude() + "", location.getLongitude() + "", carId, location.getSpeed() + "", privlat, privlong));
-                        }
-
                     }
-                    checkcollision();
-                    checkambulance();
-
-                    Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.car);
-                    Bitmap im = Bitmap.createScaledBitmap(bm, 80, 179, false);
-                    MarkerOptions markerop = new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.fromBitmap(im));
+                });
+                thread2.start();
 
 
-                    if (flag == 0 && gmap != null) {
-                        marker = gmap.addMarker(markerop);
-                        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 21.0f));
 
-                        flag = 1;
-                    } else if (marker != null) {
-                        animateMarker(marker, loc, false);
-                        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 21.0f));
 
+                LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+
+                if (reference!=null) {
+
+                    if (flag2==0) {
+                        reference.setValue(new Car(location.getLatitude() + "", location.getLongitude() + "", carId, location.getSpeed() + "" , location.getLatitude() +"", location.getLongitude()+""));
+                        flag2++;
 
                     }
 
-                    privlat = location.getLatitude() + "";
-                    privlong = location.getLongitude() + "";
+                    else {
+                        reference.setValue(new Car(location.getLatitude() + "", location.getLongitude() + "", carId, location.getSpeed() + "" ,privlat, privlong )) ;
+                    }
+
+                }
+                checkcollision();
+                checkambulance();
+
+                Bitmap bm = BitmapFactory.decodeResource(getResources() , R.drawable.car) ;
+                Bitmap im = Bitmap.createScaledBitmap(bm , 80 , 179 , false) ;
+                MarkerOptions markerop=  new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.fromBitmap(im)) ;
+
+
+                if (flag==0 && gmap!=null) {
+                    marker = gmap.addMarker(markerop) ;
+                    gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 21.0f));
+
+                    flag=1 ;
+                }
+
+                else if (marker!=null){
+                    animateMarker(marker , loc , false);
+                    gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 21.0f));
 
 
                 }
+
+                privlat = location.getLatitude() +"" ;
+                privlong = location.getLongitude() +"";
+
+
             }
 
             @Override
@@ -347,11 +352,11 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    NearbyVehichles = new HashMap<String, Location>();
+                    NearbyVehichles = new HashMap<String, Location>() ;
 
 
                     for (DataSnapshot dsp : dataSnapshot.getChildren()) {
-                        if (carId != String.valueOf(dsp.child("carid").getValue())) {
+                        if (!String.valueOf(dsp.child("carid").getValue()).equals(carId)) {
                             Location cur_loc = new Location("");
                             Location prev_loc = new Location("");
                             String current_lat = String.valueOf(dsp.child("latitude").getValue());
@@ -369,19 +374,18 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                             prev_dist = prev_loc.distanceTo(Prev_loc);
                             //Toast.makeText(mContext, "Distance"+dist, Toast.LENGTH_SHORT).show();
 
-                            if (cur_dist < prev_dist && cur_dist <= 50) {
+                            if (cur_dist < prev_dist && cur_dist <= 100) {
 
                                 NearbyVehichles.put(String.valueOf(dsp.child("carid").getValue()), cur_loc);
 
                             }
                             Log.d("Dist", cur_dist + "," + prev_dist);
-
-                        MapNearbyVehichles();
+                            }
                         }
-                    }
+                    if (NearbyVehichles!=null){
+                        MapNearbyVehichles();}
 
                 }
-
 
 
                 @Override
@@ -395,18 +399,6 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
     private void MapNearbyVehichles() {
 
-        String toSpeak="There is a vehicle nearby";
-        tts=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int i) {
-                if(i !=TextToSpeech.ERROR){
-                    tts.setLanguage(Locale.US);
-                }
-            }
-        });
-        Toast.makeText(getApplicationContext(),toSpeak,Toast.LENGTH_LONG).show();
-        tts.speak(toSpeak,TextToSpeech.QUEUE_FLUSH,null);
-
         HashMap<String , Marker> tempred =   new HashMap<>();
         Set<String> keys = NearbyVehichles.keySet() ;
 
@@ -418,7 +410,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
             LatLng ns= new LatLng(ln.getLatitude() , ln.getLongitude()) ;
 
-             Marker m    = markersred.get(id) ;
+            Marker m    = markersred.get(id) ;
 
             if (m==null) {
 
@@ -463,7 +455,6 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
     private void checkambulance() {
 
-
         if (roadname!=null){
 
             reference3  = database.getReference("Ambulances").child(roadname) ;
@@ -484,24 +475,19 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                         Log.d("Ambulance" ,ns+"" ) ;
 
                         MarkerOptions markerop =  new MarkerOptions().position(ns).icon(BitmapDescriptorFactory.fromBitmap(im)) ;
-                         tts1=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int i) {
-                if(i !=TextToSpeech.ERROR){
-                    tts1.setLanguage(Locale.US);
-                }
-            }
-        });
-                        String toSpeak="Ambulance is on the same route kindly move your vehicle to the left lane.";
-                        Toast.makeText(getApplicationContext(),toSpeak,Toast.LENGTH_LONG).show();
-                        tts1.speak(toSpeak,TextToSpeech.QUEUE_FLUSH,null);
+
+
+
+
+
+
                         String m =  ambstatus.get(am.getAmbid())   ;
 
                         if (m==null){
 
                             Log.d("Ambulance"  , " Thats New") ;
                             ambulance = gmap.addMarker(markerop) ;
-                             ambstatus.put(am.getAmbid() , "added" ) ;
+                            ambstatus.put(am.getAmbid() , "added" ) ;
 
                         }
 
