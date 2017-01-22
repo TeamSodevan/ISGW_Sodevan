@@ -28,7 +28,7 @@ public class Places {
 
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://maps.googleapis.com")
+                .baseUrl("https://maps.googleapis.com/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 

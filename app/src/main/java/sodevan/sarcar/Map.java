@@ -197,18 +197,20 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                 Places places=new Places(String.valueOf(location.getLatitude()),String.valueOf(location.getLongitude()));
                 final Call<PlacesResponse> call1=places.getKey();
-                /* call1.enqueue(new Callback<PlacesResponse>() {
+                 call1.enqueue(new Callback<PlacesResponse>() {
                     @Override
                     public void onResponse(Call<PlacesResponse> call, Response<PlacesResponse> response) {
+                        Log.d("TAG",response.toString());
+                        if(response.body().getResults().size()!=0){
                        for(int i=0;i<=1;i++) {
                            Log.d("Tag_Places", response.body().getResults().get(i).getName());
-                          Log.d("Tag_LAT",response.body().getResults().get(i).getGeometry().getLocation().getLat().toString());
-                           Log.d("Tag_LONG",response.body().getResults().get(i).getGeometry().getLocation().getLng().toString());
+                           Log.d("Tag_LAT", response.body().getResults().get(i).getGeometry().getLocation().getLat().toString());
+                           Log.d("Tag_LONG", response.body().getResults().get(i).getGeometry().getLocation().getLng().toString());
 
-                           Double lat = response.body().getResults().get(i).getGeometry().getLocation().getLat() ;
-                           Double Long = response.body().getResults().get(i).getGeometry().getLocation().getLng() ;
-                           putpetrolpump(new LatLng(lat , Long));
-
+                           Double lat = response.body().getResults().get(i).getGeometry().getLocation().getLat();
+                           Double Long = response.body().getResults().get(i).getGeometry().getLocation().getLng();
+                           putpetrolpump(new LatLng(lat, Long));
+                       }
 
 
                        }
@@ -219,7 +221,8 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                     }
                 });
-                */
+
+                /*
                 Thread thread2 = new Thread(new Runnable() {
                     List<sodevan.sarcar.PlacesModels.Result> lista = null;
 
@@ -249,7 +252,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                 thread2.start();
 
 
-
+*/
 
                 LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
 
