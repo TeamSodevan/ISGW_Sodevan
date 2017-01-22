@@ -41,7 +41,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
 
 import retrofit2.Call;
@@ -49,7 +48,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import sodevan.sarcar.MapModels.GetStreetInfo;
 import sodevan.sarcar.MapModels.MapResponse;
-import sodevan.sarcar.MapModels.Result;
 import sodevan.sarcar.PlacesModels.Places;
 import sodevan.sarcar.PlacesModels.PlacesResponse;
 
@@ -616,6 +614,37 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
         });
 
     }
+    /*
+
+        Drawable sa = getResources().getDrawable(R.drawable.alert)  ;
+
+
+        NotificationDelegater.initialize(this, NotificationDelegater.GLOBAL);
+
+        NotificationGlobal local = NotificationDelegater.getInstance().global();
+        NotificationView view = (NotificationView) findViewById(R.id.nv);
+        local.setViewEnabled(true);
+
+
+        NotificationBuilder.V1 builder = NotificationBuilder.global()
+                .setIconDrawable(sa)
+                .setTitle("Alert")
+                .setText("Ambulance on the same route kindly shift your vehicle in the left lane");
+
+        NotificationDelegater delegater = NotificationDelegater.getInstance();
+        delegater.send(builder.getNotification());
+
+
+
+
+        XML
+         <zemin.notification.NotificationView
+        android:id="@+id/nv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        />
+    */
 
 
 }
