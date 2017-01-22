@@ -13,6 +13,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -20,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -41,6 +43,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Set;
 
 import retrofit2.Call;
@@ -52,8 +55,8 @@ import sodevan.sarcar.PlacesModels.Places;
 import sodevan.sarcar.PlacesModels.PlacesResponse;
 
 
-public class Map extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
-
+public class Map extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks{
+    TextToSpeech tts1;
     private GoogleMap gmap;
     private GoogleApiClient googleApiClient;
     Marker ambulance  ;
@@ -112,6 +115,20 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION , Manifest.permission.ACCESS_COARSE_LOCATION},  permissionRequest);
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+
+
+        tts1=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int i) {
+                if(i !=TextToSpeech.ERROR){
+                    tts1.setLanguage(Locale.US);
+                    tts1.setSpeechRate((float) 0.9);
+                }
+            }
+        });
+
+
 
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -386,7 +403,8 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                             }
                         }
                     if (NearbyVehichles!=null){
-                        MapNearbyVehichles();}
+                        MapNearbyVehichles();
+                    }
 
                 }
 
@@ -401,7 +419,9 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     }
 
     private void MapNearbyVehichles() {
-
+        String toSpeak="Vehicle nearby be careful";
+        Toast.makeText(getApplicationContext(),toSpeak,Toast.LENGTH_LONG).show();
+        tts1.speak(toSpeak,TextToSpeech.QUEUE_ADD,null);
         HashMap<String , Marker> tempred =   new HashMap<>();
         Set<String> keys = NearbyVehichles.keySet() ;
 
@@ -476,7 +496,9 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                         LatLng ns = new LatLng(am.getLat() , am.getLongi() )  ;
 
                         Log.d("Ambulance" ,ns+"" ) ;
-
+                        String toSpeak="Ambulance nearby kindly move your vehicle in the left lane";
+                        Toast.makeText(getApplicationContext(),toSpeak,Toast.LENGTH_LONG).show();
+                        tts1.speak(toSpeak,TextToSpeech.QUEUE_ADD,null);
                         MarkerOptions markerop =  new MarkerOptions().position(ns).icon(BitmapDescriptorFactory.fromBitmap(im)) ;
 
 
