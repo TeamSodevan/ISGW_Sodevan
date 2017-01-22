@@ -44,6 +44,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -54,6 +55,7 @@ import sodevan.sarcar.MapModels.GetStreetInfo;
 import sodevan.sarcar.MapModels.MapResponse;
 import sodevan.sarcar.PlacesModels.Places;
 import sodevan.sarcar.PlacesModels.PlacesResponse;
+import sodevan.sarcar.PlacesModels.Result;
 import zemin.notification.NotificationBuilder;
 import zemin.notification.NotificationDelegater;
 import zemin.notification.NotificationLocal;
@@ -89,7 +91,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     String privlat;
     String privlong ;
     double LAT,LONG,prev_lat,prev_long;
-    String prevroad ;
+    String prevroad =null;
     Drawable sa ;
     SharedPreferences pref;
     int r1 ;
@@ -176,12 +178,14 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                 GetStreetInfo getStreetInfo=new GetStreetInfo(String.valueOf(location.getLatitude()),String.valueOf(location.getLongitude()));
                 final Call<MapResponse> call=getStreetInfo.getkey();
-               /* call.enqueue(new Callback<MapResponse>() {
+                call.enqueue(new Callback<MapResponse>() {
                     @Override
                     public void onResponse(Call<MapResponse> call, Response<MapResponse> response) {
+                        prevroad = roadname;
+
                         Log.d("TAG", response.body().getResults().get(0).getAddressComponents().get(0).getLongName());
                         tv_low.setText(response.body().getResults().get(0).getAddressComponents().get(0).getLongName());
-                       roadname = response.body().getResults().get(0).getAddressComponents().get(0).getLongName() ;                flag3++;
+                       roadname = response.body().getResults().get(0).getAddressComponents().get(0).getLongName() ;
 
                         reference = database.getReference("Cars").child(roadname).child(carId) ;
 
@@ -192,19 +196,19 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                     public void onFailure(Call<MapResponse> call, Throwable t) {
 
                     }
-                });*/
-                Thread thread = new Thread(new Runnable() {
+                });
+               /* Thread thread = new Thread(new Runnable() {
 
                     @Override
                     public void run() {
 
 
 
-                        prevroad = roadname;
                         //Your code goes heretry {
                         try {
+                           List<sodevan.sarcar.MapModels.Result> listaaa= call.execute().body().getResults();
 
-                            roadname = call.execute().body().getResults().get(0).getAddressComponents().get(0).getLongName();
+                           if(listaaa.size()!=0) roadname = call.execute().body().getResults().get(0).getAddressComponents().get(0).getLongName();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -212,8 +216,8 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                 });
 
-                thread.start();
-                if (prevroad!=roadname){
+                thread.start();*/
+                if (prevroad!=roadname&&prevroad!=null){
                     DatabaseReference ref=database.getReference("Cars").child(prevroad).child(carId);
                     ref.removeValue();
                 }
@@ -426,7 +430,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                             }
                         }
 
-                    if (r1!=0){
+                   /* if (r1!=0){
                         NotificationBuilder.V1 builder = NotificationBuilder.local()
                                 .setIconDrawable(sa)
                                 .setTitle("Collision Prediction")
@@ -437,7 +441,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                         delegater.send(builder.getNotification());
                         tts1.speak("Please be Careful with nearby Red Car shown in our Map",TextToSpeech.QUEUE_ADD,null);
 
-                    }
+                    }*/
 
                     if (NearbyVehichles!=null){
                         MapNearbyVehichles();
@@ -535,7 +539,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                         Log.d("Ambulance" ,ns+"" ) ;
                         String toSpeak="Ambulance nearby kindly move your vehicle in the left lane";
                         Toast.makeText(getApplicationContext(),toSpeak,Toast.LENGTH_LONG).show();
-                        tts1.speak(toSpeak,TextToSpeech.QUEUE_ADD,null);
+                       // tts1.speak(toSpeak,TextToSpeech.QUEUE_ADD,null);
                         MarkerOptions markerop =  new MarkerOptions().position(ns).icon(BitmapDescriptorFactory.fromBitmap(im)) ;
 
 
@@ -569,16 +573,17 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                         if (r!=0)
                         {
-                            NotificationBuilder.V1 builder = NotificationBuilder.local()
+                           /* NotificationBuilder.V1 builder = NotificationBuilder.local()
                                     .setIconDrawable(sa)
                                     .setTitle("Collision Prediction")
                                     .setText("There is An Ambulance on your Route . Kindly switch to left lane")
                                     .setLayoutId(zemin.notification.R.layout.notification_full);
 
                             NotificationDelegater delegater = NotificationDelegater.getInstance();
-                            delegater.send(builder.getNotification());
+                            delegater.send(builder.getNotification());*/
 
-                            tts1.speak("There is An Ambulance on your Route . Kindly switch to left lane",TextToSpeech.QUEUE_ADD,null);
+                          //
+                            //  tts1.speak("There is An Ambulance on your Route . Kindly switch to left lane",TextToSpeech.QUEUE_ADD,null);
 
                         }
 
