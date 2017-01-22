@@ -414,7 +414,8 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                             //Toast.makeText(mContext, "Distance"+dist, Toast.LENGTH_SHORT).show();
 
 
-                            if (cur_dist < prev_dist && cur_dist <= 100) {
+                            if (//cur_dist < prev_dist &&
+                             cur_dist <= 200) {
 
 
 
@@ -430,7 +431,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                             }
                         }
 
-                   /* if (r1!=0){
+                   if (r1!=0){
                         NotificationBuilder.V1 builder = NotificationBuilder.local()
                                 .setIconDrawable(sa)
                                 .setTitle("Collision Prediction")
@@ -439,9 +440,9 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                         NotificationDelegater delegater = NotificationDelegater.getInstance();
                         delegater.send(builder.getNotification());
-                        tts1.speak("Please be Careful with nearby Red Car shown in our Map",TextToSpeech.QUEUE_ADD,null);
+                       // tts1.speak("Please be Careful with nearby Red Car shown in our Map",TextToSpeech.QUEUE_ADD,null);
 
-                    }*/
+                    }
 
                     if (NearbyVehichles!=null){
                         MapNearbyVehichles();
@@ -462,7 +463,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
     private void MapNearbyVehichles() {
         String toSpeak="Vehicle nearby be careful";
-        Toast.makeText(getApplicationContext(),toSpeak,Toast.LENGTH_LONG).show();
+       // Toast.makeText(getApplicationContext(),toSpeak,Toast.LENGTH_LONG).show();
         HashMap<String , Marker> tempred =   new HashMap<>();
         Set<String> keys = NearbyVehichles.keySet() ;
 
@@ -538,7 +539,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                         Log.d("Ambulance" ,ns+"" ) ;
                         String toSpeak="Ambulance nearby kindly move your vehicle in the left lane";
-                        Toast.makeText(getApplicationContext(),toSpeak,Toast.LENGTH_LONG).show();
+                        //Toast.makeText(getApplicationContext(),toSpeak,Toast.LENGTH_LONG).show();
                        // tts1.speak(toSpeak,TextToSpeech.QUEUE_ADD,null);
                         MarkerOptions markerop =  new MarkerOptions().position(ns).icon(BitmapDescriptorFactory.fromBitmap(im)) ;
 
@@ -573,14 +574,14 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                         if (r!=0)
                         {
-                           /* NotificationBuilder.V1 builder = NotificationBuilder.local()
+                            NotificationBuilder.V1 builder = NotificationBuilder.local()
                                     .setIconDrawable(sa)
                                     .setTitle("Collision Prediction")
                                     .setText("There is An Ambulance on your Route . Kindly switch to left lane")
                                     .setLayoutId(zemin.notification.R.layout.notification_full);
 
                             NotificationDelegater delegater = NotificationDelegater.getInstance();
-                            delegater.send(builder.getNotification());*/
+                            delegater.send(builder.getNotification());
 
                           //
                             //  tts1.speak("There is An Ambulance on your Route . Kindly switch to left lane",TextToSpeech.QUEUE_ADD,null);
