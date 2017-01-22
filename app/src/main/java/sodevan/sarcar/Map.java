@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -53,6 +54,10 @@ import sodevan.sarcar.MapModels.GetStreetInfo;
 import sodevan.sarcar.MapModels.MapResponse;
 import sodevan.sarcar.PlacesModels.Places;
 import sodevan.sarcar.PlacesModels.PlacesResponse;
+import zemin.notification.NotificationBuilder;
+import zemin.notification.NotificationDelegater;
+import zemin.notification.NotificationLocal;
+import zemin.notification.NotificationView;
 
 
 public class Map extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks{
@@ -85,8 +90,9 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     String privlong ;
     double LAT,LONG,prev_lat,prev_long;
     String prevroad ;
-
+    Drawable sa ;
     SharedPreferences pref;
+    int r1 ;
 
 
 
@@ -103,6 +109,15 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
         mContext = this;
 
         database = FirebaseDatabase.getInstance() ;
+
+       sa = getResources().getDrawable(R.drawable.alert)  ;
+
+
+        NotificationDelegater.initialize(this, NotificationDelegater.LOCAL);
+
+        NotificationLocal local = NotificationDelegater.getInstance().local();
+        NotificationView view = (NotificationView) findViewById(R.id.nv);
+        local.setView(view);
 
 
         pref=getSharedPreferences("Preferences",Context.MODE_PRIVATE);
@@ -294,14 +309,14 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
                 if (flag==0 && gmap!=null) {
                     marker = gmap.addMarker(markerop) ;
-                    gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 21.0f));
+                    gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 19.0f));
 
                     flag=1 ;
                 }
 
                 else if (marker!=null){
                     animateMarker(marker , loc , false);
-                    gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 21.0f));
+                    gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 19.0f));
 
 
                 }
@@ -328,7 +343,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
             }
         } ;
 
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,  locationListener);
+        locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0,  locationListener);
 
         locationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER,
@@ -365,7 +380,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     private void checkcollision() {
         if (roadname!=null)
 
-        {
+        {   r1=0 ;
             reference2 = database.getReference("Cars").child(roadname);
 
             reference2.addValueEventListener(new ValueEventListener() {
@@ -394,17 +409,40 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                             prev_dist = prev_loc.distanceTo(Prev_loc);
                             //Toast.makeText(mContext, "Distance"+dist, Toast.LENGTH_SHORT).show();
 
+
                             if (cur_dist < prev_dist && cur_dist <= 100) {
 
+
+
                                 NearbyVehichles.put(String.valueOf(dsp.child("carid").getValue()), cur_loc);
+                                r1=r1+1 ;
+
+
 
                             }
+
+
                             Log.d("Dist", cur_dist + "," + prev_dist);
                             }
                         }
+
+                    if (r1!=0){
+                        NotificationBuilder.V1 builder = NotificationBuilder.local()
+                                .setIconDrawable(sa)
+                                .setTitle("Collision Prediction")
+                                .setText("Please be Careful with nearby Red Car shown in our Map")
+                                .setLayoutId(zemin.notification.R.layout.notification_full);
+
+                        NotificationDelegater delegater = NotificationDelegater.getInstance();
+                        delegater.send(builder.getNotification());
+                        tts1.speak("Please be Careful with nearby Red Car shown in our Map",TextToSpeech.QUEUE_ADD,null);
+
+                    }
+
                     if (NearbyVehichles!=null){
                         MapNearbyVehichles();
                     }
+
 
                 }
 
@@ -421,7 +459,6 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     private void MapNearbyVehichles() {
         String toSpeak="Vehicle nearby be careful";
         Toast.makeText(getApplicationContext(),toSpeak,Toast.LENGTH_LONG).show();
-        tts1.speak(toSpeak,TextToSpeech.QUEUE_ADD,null);
         HashMap<String , Marker> tempred =   new HashMap<>();
         Set<String> keys = NearbyVehichles.keySet() ;
 
@@ -503,7 +540,7 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
 
 
 
-
+                        int r=0 ;
 
 
                         String m =  ambstatus.get(am.getAmbid())   ;
@@ -514,6 +551,10 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                             ambulance = gmap.addMarker(markerop) ;
                             ambstatus.put(am.getAmbid() , "added" ) ;
 
+                            r=r+1 ;
+
+
+
                         }
 
                         else {
@@ -521,6 +562,23 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
                             Log.d("Ambulance"  , " moving Marker") ;
 
                             animateMarker(ambulance , ns , false);
+                            r=r+1 ;
+
+                        }
+
+
+                        if (r!=0)
+                        {
+                            NotificationBuilder.V1 builder = NotificationBuilder.local()
+                                    .setIconDrawable(sa)
+                                    .setTitle("Collision Prediction")
+                                    .setText("There is An Ambulance on your Route . Kindly switch to left lane")
+                                    .setLayoutId(zemin.notification.R.layout.notification_full);
+
+                            NotificationDelegater delegater = NotificationDelegater.getInstance();
+                            delegater.send(builder.getNotification());
+
+                            tts1.speak("There is An Ambulance on your Route . Kindly switch to left lane",TextToSpeech.QUEUE_ADD,null);
 
                         }
 
@@ -638,34 +696,18 @@ public class Map extends AppCompatActivity implements OnMapReadyCallback, Google
     }
     /*
 
-        Drawable sa = getResources().getDrawable(R.drawable.alert)  ;
 
 
-        NotificationDelegater.initialize(this, NotificationDelegater.GLOBAL);
-
-        NotificationGlobal local = NotificationDelegater.getInstance().global();
-        NotificationView view = (NotificationView) findViewById(R.id.nv);
-        local.setViewEnabled(true);
 
 
-        NotificationBuilder.V1 builder = NotificationBuilder.global()
-                .setIconDrawable(sa)
-                .setTitle("Alert")
-                .setText("Ambulance on the same route kindly shift your vehicle in the left lane");
 
-        NotificationDelegater delegater = NotificationDelegater.getInstance();
-        delegater.send(builder.getNotification());
+
 
 
 
 
         XML
-         <zemin.notification.NotificationView
-        android:id="@+id/nv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
 
-        />
     */
 
 

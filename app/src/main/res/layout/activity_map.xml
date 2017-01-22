@@ -67,5 +67,12 @@
 
     </FrameLayout>
 
+    <zemin.notification.NotificationView
+        android:id="@+id/nv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        />
+
 
 </RelativeLayout>

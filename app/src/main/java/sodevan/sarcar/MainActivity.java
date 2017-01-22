@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
             Intent ch = new Intent(this, Map.class);
             startActivity(ch);
             finish();
+
         }
 
 

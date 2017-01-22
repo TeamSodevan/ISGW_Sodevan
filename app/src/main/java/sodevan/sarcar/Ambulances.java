@@ -21,6 +21,7 @@ public class Ambulances {
         this.longi = longi;
         this.prevlat = prevlat;
         this.prevlong = prevlong;
+
     }
 
 
